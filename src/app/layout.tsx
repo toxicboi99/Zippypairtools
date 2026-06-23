@@ -5,6 +5,22 @@ import { Navbar } from "@/components/layout/navbar";
 import { siteConfig } from "@/constants/site";
 import "./globals.css";
 
+const themeInitScript = `
+(() => {
+  try {
+    const storedTheme = window.localStorage.getItem("zippypair-theme");
+    const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
+    const root = document.documentElement;
+
+    root.classList.toggle("dark", theme === "dark");
+    root.style.colorScheme = theme;
+  } catch {
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = "dark";
+  }
+})();
+`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
@@ -37,7 +53,10 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <Navbar />
         <main>{children}</main>

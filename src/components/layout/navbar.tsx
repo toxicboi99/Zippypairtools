@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Search, Zap } from "lucide-react";
 
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { navLinks, siteConfig } from "@/constants/site";
 
@@ -46,6 +47,8 @@ export function Navbar() {
             <span className="hidden sm:inline">Find tools</span>
           </a>
         </Button>
+
+        <ThemeToggle />
 
         <Button asChild size="sm" className="hidden sm:inline-flex">
           <a href="#popular">

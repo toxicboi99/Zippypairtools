@@ -3,9 +3,11 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { PDFToolsWorkspace } from "@/components/pdf/pdf-tools-workspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getPDFToolConfig } from "@/constants/pdf-tools";
 import { siteConfig } from "@/constants/site";
 import { categories, getToolBySlug, tools } from "@/constants/tools";
 import { getToneForCategoryTitle } from "@/lib/category-tones";
@@ -36,6 +38,10 @@ export async function generateMetadata({
   return {
     title: tool.title,
     description: tool.description,
+    keywords: [tool.title, tool.category, ...tool.keywords],
+    alternates: {
+      canonical: `/tools/${tool.slug}`,
+    },
     openGraph: {
       title: `${tool.title} | ${siteConfig.name}`,
       description: tool.description,
@@ -55,6 +61,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
   const category = categories.find((item) => item.slug === tool.categorySlug);
   const tone = getToneForCategoryTitle(tool.category);
   const Icon = tool.icon;
+  const pdfToolConfig = getPDFToolConfig(tool.slug);
   const relatedTools = tools
     .filter(
       (item) =>
@@ -64,7 +71,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
 
   return (
     <section className="py-12 sm:py-16">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Button asChild variant="ghost" size="sm">
           <Link href="/#popular">
             <ArrowLeft aria-hidden="true" />
@@ -72,7 +79,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
           </Link>
         </Button>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_18rem]">
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
           <div>
             <Badge variant="outline" className={cn("mb-5", tone.badge)}>
               {tool.category}
@@ -96,32 +103,36 @@ export default async function ToolPage({ params }: ToolPageProps) {
               </div>
             </div>
 
-            <Card className="mt-8">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Tool workspace
-                </h2>
-                <div className="mt-5 rounded-lg border bg-background p-6">
-                  <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-                    <Icon
-                      aria-hidden="true"
-                      className={cn("size-10", tone.text)}
-                    />
-                    <h3 className="mt-4 text-lg font-semibold text-foreground">
-                      {tool.title} workspace
-                    </h3>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                      Add files, paste content, choose options, and review
-                      results from one focused workspace.
-                    </p>
-                    <Button className="mt-5">
-                      Start workflow
-                      <ArrowRight aria-hidden="true" />
-                    </Button>
+            {pdfToolConfig ? (
+              <PDFToolsWorkspace slug={tool.slug} />
+            ) : (
+              <Card className="mt-8">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Tool workspace
+                  </h2>
+                  <div className="mt-5 rounded-lg border bg-background p-6">
+                    <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
+                      <Icon
+                        aria-hidden="true"
+                        className={cn("size-10", tone.text)}
+                      />
+                      <h3 className="mt-4 text-lg font-semibold text-foreground">
+                        {tool.title} workspace
+                      </h3>
+                      <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                        Add files, paste content, choose options, and review
+                        results from one focused workspace.
+                      </p>
+                      <Button className="mt-5">
+                        Start workflow
+                        <ArrowRight aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <aside className="space-y-4">
