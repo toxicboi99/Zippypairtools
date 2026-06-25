@@ -2,15 +2,15 @@ import type { FileLike } from "@/lib/upload";
 import type { PDFResponse } from "@/types/pdf";
 import {
   convertOfficeToPDF,
-  getWordValidationOptions,
+  getPowerpointValidationOptions,
 } from "./office-conversion.service";
 
-export async function convertWordToPDF(
+export async function convertPowerPointToPDF(
   file: FileLike,
 ): Promise<PDFResponse> {
   return convertOfficeToPDF({
     file,
-    label: "Word to PDF",
-    validation: getWordValidationOptions(),
+    label: "PowerPoint to PDF",
+    validation: getPowerpointValidationOptions(),
   });
 }

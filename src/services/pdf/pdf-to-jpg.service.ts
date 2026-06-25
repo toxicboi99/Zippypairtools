@@ -1,4 +1,8 @@
-import sharp from "sharp";
+import {
+  DOMMatrix as CanvasDOMMatrix,
+  ImageData as CanvasImageData,
+  createCanvas,
+} from "canvas";
 
 import type { FileLike } from "@/lib/upload";
 import type { PDFResponse } from "@/types/pdf";
@@ -16,6 +20,7 @@ import {
 export interface PDFToJPGOptions {
   pages?: string;
   quality?: number;
+  dpi?: number;
 }
 
 export async function convertPDFToJPG(
@@ -47,39 +52,102 @@ export async function convertPDFToJPG(
   const baseName = getBaseName(fileName);
 
   try {
-    const outputs = await Promise.all(
-      selectedPages.map(async (pageNumber) => {
-        const imageBuffer = await sharp(buffer, {
-          density: 144,
-          page: pageNumber - 1,
-        })
-          .jpeg({
-            quality: options.quality ?? 85,
-            mozjpeg: true,
-          })
-          .toBuffer();
-
-        return createPdfOutputFile({
-          bytes: imageBuffer,
-          fileName: `${baseName}-page-${pageNumber}.jpg`,
-          mimeType: JPEG_OUTPUT_MIME_TYPE,
-          pageRange: `${pageNumber}`,
-        });
-      }),
-    );
-
-    return createPdfResponse({
-      message: "PDF converted to JPG successfully.",
-      files: outputs,
-      meta: {
-        inputPages: pageCount,
-        outputFiles: outputs.length,
-      },
+    const pdfjs = await loadPdfJs();
+    const loadingTask = pdfjs.getDocument({
+      data: new Uint8Array(buffer),
+      disableFontFace: true,
+      useWorkerFetch: false,
     });
-  } catch {
+    const renderDocument = await loadingTask.promise;
+
+    try {
+      const outputs = [];
+
+      for (const pageNumber of selectedPages) {
+        const imageBuffer = await renderPageToJPG({
+          document: renderDocument,
+          pageNumber,
+          dpi: options.dpi ?? 144,
+          quality: options.quality ?? 85,
+        });
+
+        outputs.push(
+          createPdfOutputFile({
+            bytes: imageBuffer,
+            fileName: `${baseName}-page-${pageNumber}.jpg`,
+            mimeType: JPEG_OUTPUT_MIME_TYPE,
+            pageRange: `${pageNumber}`,
+          }),
+        );
+      }
+
+      return createPdfResponse({
+        message: "PDF converted to JPG successfully.",
+        files: outputs,
+        meta: {
+          inputPages: pageCount,
+          outputFiles: outputs.length,
+          dpi: options.dpi ?? 144,
+          quality: options.quality ?? 85,
+        },
+      });
+    } finally {
+      await renderDocument.cleanup();
+      await loadingTask.destroy();
+    }
+  } catch (error) {
     throw new ApiError(
-      "PDF rendering is unavailable on this server. The PDF passed validation, but the JPG renderer could not process it.",
+      error instanceof Error ? error.message : "PDF rendering failed.",
       501,
     );
   }
+}
+
+async function loadPdfJs() {
+  const globalScope = globalThis as typeof globalThis & {
+    DOMMatrix?: typeof globalThis.DOMMatrix;
+    ImageData?: typeof globalThis.ImageData;
+  };
+
+  globalScope.DOMMatrix ??=
+    CanvasDOMMatrix as unknown as typeof globalThis.DOMMatrix;
+  globalScope.ImageData ??=
+    CanvasImageData as unknown as typeof globalThis.ImageData;
+
+  return import("pdfjs-dist/legacy/build/pdf.mjs");
+}
+
+async function renderPageToJPG({
+  document,
+  pageNumber,
+  dpi,
+  quality,
+}: {
+  document: Awaited<
+    ReturnType<typeof import("pdfjs-dist/legacy/build/pdf.mjs")["getDocument"]>["promise"]
+  >;
+  pageNumber: number;
+  dpi: number;
+  quality: number;
+}) {
+  const page = await document.getPage(pageNumber);
+  const viewport = page.getViewport({ scale: dpi / 72 });
+  const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+  const canvasContext = canvas.getContext("2d");
+
+  canvasContext.fillStyle = "#ffffff";
+  canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+
+  await page.render({
+    canvasContext: canvasContext as unknown as CanvasRenderingContext2D,
+    viewport,
+  }).promise;
+
+  page.cleanup();
+
+  return canvas.toBuffer("image/jpeg", {
+    quality: Math.min(Math.max(quality, 40), 95) / 100,
+    progressive: true,
+    chromaSubsampling: true,
+  });
 }

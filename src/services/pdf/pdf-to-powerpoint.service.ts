@@ -2,8 +2,8 @@ import type { FileLike } from "@/lib/upload";
 import type { PDFResponse } from "@/types/pdf";
 import { convertPDFWithLibreOffice } from "./office-conversion.service";
 
-export async function convertPDFToWord(
+export async function convertPDFToPowerPoint(
   file: FileLike,
 ): Promise<PDFResponse> {
-  return convertPDFWithLibreOffice(file, "docx", "PDF to Word");
+  return convertPDFWithLibreOffice(file, "pptx", "PDF to PowerPoint");
 }

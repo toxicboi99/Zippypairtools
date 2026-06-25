@@ -1,5 +1,5 @@
 import { getRequiredFormFile } from "@/lib/upload";
-import { convertPDFToWordPlaceholder } from "@/services/pdf/pdf-to-word.service";
+import { convertPDFToWord } from "@/services/pdf/pdf-to-word.service";
 import { singlePdfRequestSchema } from "@/validators/pdf.validator";
 import { handlePDFRequest } from "../_shared";
 
@@ -12,6 +12,6 @@ export async function POST(request: Request) {
       file: getRequiredFormFile(formData),
     });
 
-    return convertPDFToWordPlaceholder(payload.file);
+    return convertPDFToWord(payload.file);
   });
 }

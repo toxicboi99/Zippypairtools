@@ -1,8 +1,10 @@
 import {
   IMAGE_TO_PDF_MIME_TYPES,
+  EXCEL_MIME_TYPES,
   PDF_MAX_FILE_SIZE,
   PDF_MAX_FILES,
   PDF_MIME_TYPE,
+  POWERPOINT_MIME_TYPES,
   WORD_MIME_TYPES,
 } from "@/types/pdf";
 import { ApiError } from "@/utils/api-error";
@@ -14,6 +16,8 @@ export const PDF_UPLOAD_MIME_TYPES = [PDF_MIME_TYPE] as const;
 export const PDF_UPLOAD_EXTENSIONS = [".pdf"] as const;
 export const IMAGE_UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png"] as const;
 export const WORD_UPLOAD_EXTENSIONS = [".doc", ".docx"] as const;
+export const EXCEL_UPLOAD_EXTENSIONS = [".xls", ".xlsx", ".csv"] as const;
+export const POWERPOINT_UPLOAD_EXTENSIONS = [".ppt", ".pptx"] as const;
 
 export type UploadValidationOptions = {
   allowedMimeTypes?: readonly string[];
@@ -32,6 +36,8 @@ export type FileLike = {
 
 export const imageUploadMimeTypes = [...IMAGE_TO_PDF_MIME_TYPES];
 export const wordUploadMimeTypes = [...WORD_MIME_TYPES];
+export const excelUploadMimeTypes = [...EXCEL_MIME_TYPES];
+export const powerpointUploadMimeTypes = [...POWERPOINT_MIME_TYPES];
 
 export function sanitizeFileName(fileName: string) {
   const cleanName = fileName
