@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ChatGroq } from "@langchain/groq";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { string } from "zod";
 
 // Initialize model at module level (no await needed)
 const model = new ChatGroq({
@@ -35,10 +36,19 @@ Be concise and accurate.`
   return response.content;
 }
 
-export async function GET() {
+export async function GET(request:NextRequest) {
   try {
-    const result = await answerQuestion(datass, systemPrompt);
-    return NextResponse.json({ summary: result });
+    const searchParams = request.nextUrl.searchParams;
+    const comd = searchParams.get("comd");
+    const prompts = searchParams.get("prompt");
+    if (!comd) {
+      return NextResponse.json(
+        { error: "Missing 'comd' parameter" },
+        { status: 400 }
+      );
+    }
+    const result = await answerQuestion(comd, prompts || systemPrompt);
+    return NextResponse.json(result );
   } catch (error) {
     console.error("AI summary error:", error);
     return NextResponse.json(
