@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { PDFToolsWorkspace } from "@/components/pdf/pdf-tools-workspace";
+import { SummarizeWorkspace } from "@/components/ai/summarize-workspace";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -105,6 +106,15 @@ export default async function ToolPage({ params }: ToolPageProps) {
 
             {pdfToolConfig ? (
               <PDFToolsWorkspace slug={tool.slug} />
+            ) : slug === "summarize" ? (
+              <Card className="mt-8">
+                <CardContent className="p-6">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Tool workspace
+                  </h2>
+                  <SummarizeWorkspace />
+                </CardContent>
+              </Card>
             ) : (
               <Card className="mt-8">
                 <CardContent className="p-6">
