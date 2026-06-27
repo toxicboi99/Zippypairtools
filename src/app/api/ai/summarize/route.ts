@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { summarizeWithPrompt, extractTextFromFile, type BulletStyle } from "@/services/ai/summarize.service";
+import { toApiError } from "@/utils/response";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,9 +26,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("AI summary error:", error);
+    const apiError = toApiError(error);
+
     return NextResponse.json(
-      { error: "Failed to generate summary" },
-      { status: 500 }
+      { error: apiError.message },
+      { status: apiError.statusCode }
     );
   }
 }
@@ -77,10 +81,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[API] File processing error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const apiError = toApiError(error);
+
     return NextResponse.json(
-      { error: `Failed to process file: ${errorMessage}` },
-      { status: 500 }
+      { error: `Failed to process file: ${apiError.message}` },
+      { status: apiError.statusCode }
     );
   }
 }

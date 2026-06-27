@@ -1,13 +1,8 @@
-import { ChatGroq } from "@langchain/groq";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import * as XLSX from "xlsx";
 // @ts-ignore - mammoth doesn't have complete type definitions
 import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
-const model = new ChatGroq({
-  apiKey: process.env.GROQ_API_KEY,
-  model: "llama-3.3-70b-versatile",
-});
+
+import { runGroqChat } from "@/lib/groq";
 
 export type BulletStyle = "dash" | "asterisk" | "number" | "plus" | "arrow";
 export type SupportedFileType = "txt" | "pdf" | "docx" | "doc" | "xlsx" | "xls" | "csv" | "md";
@@ -102,6 +97,7 @@ function extractTextPlain(buffer: Buffer): string {
  * Extract text from PDF
  */
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: new Uint8Array(buffer) });
 
   try {
@@ -275,14 +271,17 @@ export async function summarizeText(
       : "Format the summary as a paragraph";
 
   const messages = [
-    new SystemMessage(systemPrompt),
-    new HumanMessage(
-      `${lengthGuide}. ${formatGuide}.\n\nText to summarize:\n${text}\n\n${prompt || "Please summarize the above text."}`
-    ),
+    {
+      role: "system" as const,
+      content: systemPrompt,
+    },
+    {
+      role: "user" as const,
+      content: `${lengthGuide}. ${formatGuide}.\n\nText to summarize:\n${text}\n\n${prompt || "Please summarize the above text."}`,
+    },
   ];
 
-  let response = await model.invoke(messages);
-  let summary = String(response.content);
+  let summary = await runGroqChat(messages);
 
   if (format === "bullets") {
     summary = formatBulletPoints(summary, bulletStyle);
@@ -303,12 +302,17 @@ export async function summarizeWithPrompt(
   }
 
   const messages = [
-    new SystemMessage(systemPrompt),
-    new HumanMessage(`Document:\n${text}\n\nTask: ${customPrompt}`),
+    {
+      role: "system" as const,
+      content: systemPrompt,
+    },
+    {
+      role: "user" as const,
+      content: `Document:\n${text}\n\nTask: ${customPrompt}`,
+    },
   ];
 
-  const response = await model.invoke(messages);
-  return String(response.content);
+  return runGroqChat(messages);
 }
 
 /**
@@ -331,12 +335,16 @@ export async function summarizeMultiple(
  */
 export async function extractKeyPoints(text: string): Promise<string> {
   const messages = [
-    new SystemMessage(
-      "Extract the most important key points from the provided text. Format as bullet points."
-    ),
-    new HumanMessage(text),
+    {
+      role: "system" as const,
+      content:
+        "Extract the most important key points from the provided text. Format as bullet points.",
+    },
+    {
+      role: "user" as const,
+      content: text,
+    },
   ];
 
-  const response = await model.invoke(messages);
-  return String(response.content);
+  return runGroqChat(messages);
 }
