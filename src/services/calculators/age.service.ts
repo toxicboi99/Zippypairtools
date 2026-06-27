@@ -1,11 +1,12 @@
 import type { AgeRequest } from "@/validators/calculator.validator";
+import { ApiError } from "@/utils/api-error";
 
 export function calculateAge(input: AgeRequest) {
   const birthDate = parseDate(input.dateOfBirth);
   const asOfDate = input.asOf ? parseDate(input.asOf) : new Date();
 
   if (birthDate > asOfDate) {
-    throw new Error("Date of birth cannot be in the future.");
+    throw new ApiError("Date of birth cannot be after the as-of date.", 400);
   }
 
   let years = asOfDate.getFullYear() - birthDate.getFullYear();
@@ -40,7 +41,7 @@ function parseDate(value: string) {
   const date = new Date(`${value}T00:00:00.000Z`);
 
   if (Number.isNaN(date.getTime())) {
-    throw new Error("Invalid date.");
+    throw new ApiError("Invalid date.", 400);
   }
 
   return date;
