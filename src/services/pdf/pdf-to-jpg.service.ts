@@ -139,6 +139,7 @@ async function renderPageToJPG({
   canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 
   await page.render({
+    canvas: canvas as unknown as HTMLCanvasElement,
     canvasContext: canvasContext as unknown as CanvasRenderingContext2D,
     viewport,
   }).promise;
