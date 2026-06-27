@@ -43,6 +43,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`[API] Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+
     // Check file size (max 50MB)
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json(
@@ -52,14 +54,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract text from file
+    console.log("[API] Starting file extraction...");
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const extraction = await extractTextFromFile(fileBuffer, file.name);
+    console.log(`[API] Extraction successful. Text length: ${extraction.text.length}`);
 
     // Summarize the extracted text
+    console.log("[API] Starting summarization...");
     const result = await summarizeWithPrompt(
       extraction.text,
       prompts || "Please summarize the provided text"
     );
+    console.log("[API] Summarization complete.");
 
     return NextResponse.json({
       summary: result,
@@ -68,7 +74,7 @@ export async function POST(request: NextRequest) {
       fileType: extraction.fileType,
     });
   } catch (error) {
-    console.error("File processing error:", error);
+    console.error("[API] File processing error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to process file: ${errorMessage}` },

@@ -136,10 +136,19 @@ export function SummarizeWorkspace() {
       }
     } catch (err) {
       console.error("Error processing file:", err);
-      const errorMessage =
-        axios.isAxiosError(err) && err.response?.data?.error
-          ? err.response.data.error
-          : "Failed to process file";
+      let errorMessage = "Failed to process file";
+      
+      if (axios.isAxiosError(err)) {
+        // Get error from API response
+        if (err.response?.data?.error) {
+          errorMessage = err.response.data.error;
+        } else if (err.message) {
+          errorMessage = `Network error: ${err.message}`;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
       setUploadedFile(null);
     } finally {

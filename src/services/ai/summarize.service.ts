@@ -1,10 +1,10 @@
 import { ChatGroq } from "@langchain/groq";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import * as XLSX from "xlsx";
-// @ts-ignore - docx-parser doesn't have type definitions
-import { DocxParser } from "docx-parser";
+// @ts-ignore - mammoth doesn't have complete type definitions
+import mammoth from "mammoth";
 // @ts-ignore - pdf-parse doesn't have complete type definitions
-import pdfParse from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -40,6 +40,8 @@ export async function extractTextFromFile(
   let buffer: Buffer;
   const fileType = getFileType(fileName);
 
+  console.log(`Extracting ${fileType} file: ${fileName}`);
+
   if (file instanceof File) {
     buffer = Buffer.from(await file.arrayBuffer());
   } else {
@@ -50,30 +52,39 @@ export async function extractTextFromFile(
 
   try {
     if (fileType === "txt" || fileType === "md") {
+      console.log("Using plain text extraction");
       text = extractTextPlain(buffer);
     } else if (fileType === "pdf") {
+      console.log("Using PDF extraction");
       text = await extractTextFromPDF(buffer);
     } else if (fileType === "docx") {
+      console.log("Using DOCX extraction");
       text = await extractTextFromDocx(buffer);
     } else if (fileType === "doc") {
+      console.log("Using DOC extraction");
       text = await extractTextFromDoc(buffer);
     } else if (fileType === "xlsx" || fileType === "xls") {
+      console.log("Using Excel extraction");
       text = extractTextFromExcel(buffer);
     } else if (fileType === "csv") {
+      console.log("Using CSV extraction");
       text = extractTextPlain(buffer);
     } else {
-      // Fallback: try to extract as text
+      console.log("Using fallback text extraction");
       text = extractTextPlain(buffer);
     }
   } catch (error) {
     console.error(`Error extracting ${fileType} file:`, error);
     // Fallback to plain text extraction
+    console.log("Falling back to plain text extraction");
     text = extractTextPlain(buffer);
   }
 
-  if (!text.trim()) {
-    throw new Error("Could not extract text from file - file may be empty or corrupted");
+  if (!text || !text.trim()) {
+    throw new Error(`Could not extract text from ${fileType} file - file may be empty or corrupted`);
   }
+
+  console.log(`Extraction successful. Extracted ${text.length} characters`);
 
   return {
     text: text.trim(),
@@ -94,15 +105,18 @@ function extractTextPlain(buffer: Buffer): string {
  */
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   try {
-    const data = await pdfParse(buffer);
+    console.log("[PDF] Starting PDF extraction");
+    const data = await pdf(buffer);
+    console.log("[PDF] PDF parsed, text length:", data?.text?.length || 0);
     
-    if (!data || !data.text) {
+    if (data && data.text && data.text.trim()) {
+      return data.text.trim();
+    } else {
+      console.log("[PDF] No text found in PDF");
       return "No text content found in PDF";
     }
-    
-    return data.text.trim() || "No text content found in PDF";
   } catch (error) {
-    console.error("PDF extraction error:", error);
+    console.error("[PDF] PDF extraction error:", error);
     throw new Error("Failed to extract text from PDF file");
   }
 }
@@ -112,24 +126,19 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
  */
 async function extractTextFromDocx(buffer: Buffer): Promise<string> {
   try {
-    const parser = new DocxParser();
-    const docData = parser.parseXML(buffer.toString("binary"));
+    console.log("[DOCX] Starting DOCX extraction");
+    const result = await mammoth.extractRawText({ buffer });
+    console.log("[DOCX] Extraction successful, text length:", result.value.length);
     
-    let text = "";
-    if (docData && docData.paragraphs) {
-      text = docData.paragraphs
-        .map((para: any) => {
-          if (typeof para === "string") return para;
-          if (para.text) return para.text;
-          return "";
-        })
-        .join("\n");
+    if (result.value && result.value.trim()) {
+      return result.value.trim();
+    } else {
+      console.log("[DOCX] No text content found");
+      return "No text content found in DOCX";
     }
-    
-    return text || "No text content found in DOCX";
   } catch (error) {
-    console.error("DOCX extraction error:", error);
-    // Fallback: try to extract as plain text
+    console.error("[DOCX] DOCX extraction error:", error);
+    console.log("[DOCX] Falling back to plain text extraction");
     return extractTextPlain(buffer);
   }
 }
@@ -162,19 +171,28 @@ async function extractTextFromDoc(buffer: Buffer): Promise<string> {
  */
 function extractTextFromExcel(buffer: Buffer): string {
   try {
+    console.log("[Excel] Starting Excel extraction");
     const workbook = XLSX.read(buffer, { type: "buffer" });
+    console.log("[Excel] Workbook loaded with sheets:", workbook.SheetNames);
+    
     let text = "";
 
     // Iterate through all sheets
     for (const sheetName of workbook.SheetNames) {
       const sheet = workbook.Sheets[sheetName];
-      text += `Sheet: ${sheetName}\n`;
-      text += XLSX.utils.sheet_to_csv(sheet) + "\n\n";
+      const csvData = XLSX.utils.sheet_to_csv(sheet);
+      text += `Sheet: ${sheetName}\n${csvData}\n\n`;
     }
 
-    return text || "No content found in Excel file";
+    if (text.length > 0) {
+      console.log("[Excel] Extraction successful");
+      return text;
+    } else {
+      console.log("[Excel] No content found");
+      return "No content found in Excel file";
+    }
   } catch (error) {
-    console.error("Excel extraction error:", error);
+    console.error("[Excel] Excel extraction error:", error);
     throw new Error("Failed to extract Excel content");
   }
 }
