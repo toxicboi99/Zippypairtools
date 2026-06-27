@@ -10,10 +10,20 @@ import {
   Loader2,
   Copy,
   Check,
+  X,
+  FileText,
 } from "lucide-react";
 import axios from "axios";
+import type { BulletStyle } from "@/services/ai/summarize.service";
 
 const LENGTHS = ["Short", "Medium", "Long"];
+const BULLET_STYLES = [
+  { value: "dash" as BulletStyle, label: "- Dash", symbol: "-" },
+  { value: "asterisk" as BulletStyle, label: "* Asterisk", symbol: "*" },
+  { value: "plus" as BulletStyle, label: "+ Plus", symbol: "+" },
+  { value: "number" as BulletStyle, label: "1. Number", symbol: "1." },
+  { value: "arrow" as BulletStyle, label: "→ Arrow", symbol: "→" },
+];
 
 type OutputMode = "paragraph" | "bullets";
 
@@ -67,22 +77,96 @@ function DropdownSelect({
 }
 
 export function SummarizeWorkspace() {
-  const [length, setLength] = useState("Short");
+  const [length, setLength] = useState("Medium");
   const [mode, setMode] = useState<OutputMode>("paragraph");
+  const [bulletStyle, setBulletStyle] = useState<BulletStyle>("dash");
   const [inputText, setInputText] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<{
+    name: string;
+    size: string;
+  } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
       setInputText(text);
+      setError("");
     } catch {
       setError("Unable to read from clipboard");
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Create form data to send file to a handler
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Read file locally
+      const text = await readFileAsText(file);
+      setInputText(text);
+      setUploadedFile({
+        name: file.name,
+        size: formatFileSize(file.size),
+      });
+    } catch (err) {
+      console.error("Error reading file:", err);
+      setError(
+        `Failed to read file: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    } finally {
+      setLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  const readFileAsText = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result;
+        if (typeof result === "string") {
+          resolve(result);
+        } else {
+          reject(new Error("Failed to read file"));
+        }
+      };
+      reader.onerror = () => reject(new Error("File read error"));
+
+      // Handle different file types
+      if (file.type === "application/pdf") {
+        reject(new Error("PDF files need special handling - please use .txt or .md files"));
+      } else if (
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        file.name.endsWith(".docx")
+      ) {
+        reject(new Error("DOCX files require additional setup - please convert to .txt or .md"));
+      } else if (file.type === "application/msword" || file.name.endsWith(".doc")) {
+        reject(new Error("DOC files require additional setup - please convert to .txt or .md"));
+      } else {
+        reader.readAsText(file);
+      }
+    });
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   const handleSummarize = async () => {
@@ -98,7 +182,7 @@ export function SummarizeWorkspace() {
     try {
       const prompt =
         mode === "bullets"
-          ? "Summarize this text in bullet points"
+          ? `Summarize this text in bullet points using ${bulletStyle} style`
           : "Summarize the total text in short form";
 
       const response = await axios.get("/api/ai/summarize", {
@@ -120,28 +204,6 @@ export function SummarizeWorkspace() {
     }
   };
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("text/")) {
-      setError("Please upload a text file");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const result = ev.target?.result as string;
-      setInputText(result);
-      setError("");
-    };
-    reader.onerror = () => {
-      setError("Failed to read file");
-    };
-    reader.readAsText(file);
-    e.target.value = "";
-  };
-
   const handleCopy = () => {
     navigator.clipboard.writeText(summary);
     setCopied(true);
@@ -152,13 +214,19 @@ export function SummarizeWorkspace() {
     setInputText("");
     setSummary("");
     setError("");
+    setUploadedFile(null);
   };
 
   return (
     <div className="mt-8 space-y-6">
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-3">
-        <DropdownSelect value={length} options={LENGTHS} onChange={setLength} />
+        <DropdownSelect
+          value={length}
+          options={LENGTHS}
+          onChange={setLength}
+          prefix="Length"
+        />
 
         {/* Mode toggle */}
         <div className="ml-auto flex items-center border border-gray-300 rounded-full overflow-hidden">
@@ -186,6 +254,29 @@ export function SummarizeWorkspace() {
           </button>
         </div>
       </div>
+
+      {/* Bullet style selector - only show when bullets mode is selected */}
+      {mode === "bullets" && (
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm font-medium text-gray-600 w-full">
+            Bullet Style:
+          </span>
+          {BULLET_STYLES.map((style) => (
+            <button
+              key={style.value}
+              onClick={() => setBulletStyle(style.value)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                bulletStyle === style.value
+                  ? "bg-[#2a7a3b] text-white border border-[#2a7a3b]"
+                  : "border border-gray-300 text-gray-700 hover:border-gray-400 bg-white"
+              }`}
+            >
+              <span className="text-xs">{style.symbol}</span>
+              {style.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Input Textarea */}
       <div className="relative border border-gray-200 rounded-xl bg-white overflow-hidden">
@@ -215,8 +306,8 @@ export function SummarizeWorkspace() {
           <input
             ref={fileRef}
             type="file"
-            accept=".txt,.pdf,.doc,.docx"
-            onChange={handleUpload}
+            accept=".txt,.md"
+            onChange={handleFileUpload}
             className="hidden"
           />
         </div>
@@ -226,6 +317,23 @@ export function SummarizeWorkspace() {
           {inputText.length.toLocaleString()} characters
         </div>
       </div>
+
+      {/* Uploaded file info */}
+      {uploadedFile && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <FileText size={16} className="text-blue-600" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-900">{uploadedFile.name}</p>
+            <p className="text-xs text-blue-700">{uploadedFile.size}</p>
+          </div>
+          <button
+            onClick={() => setUploadedFile(null)}
+            className="p-1 hover:bg-blue-100 rounded transition-colors"
+          >
+            <X size={16} className="text-blue-600" />
+          </button>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (
