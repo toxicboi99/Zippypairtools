@@ -107,48 +107,48 @@ export function SummarizeWorkspace() {
 
     setLoading(true);
     setError("");
+    setSummary("");
 
     try {
-      // Create form data to send file to a handler
+      // Send file to API for extraction and summarization
       const formData = new FormData();
       formData.append("file", file);
-
-      // Read file locally
-      const text = await readFileAsText(file);
-      setInputText(text);
-      setUploadedFile({
-        name: file.name,
-        size: formatFileSize(file.size),
-      });
-    } catch (err) {
-      console.error("Error reading file:", err);
-      setError(
-        `Failed to read file: ${err instanceof Error ? err.message : "Unknown error"}`
+      formData.append(
+        "prompts",
+        mode === "bullets"
+          ? `Summarize this text in bullet points using ${bulletStyle} style`
+          : "Please summarize the provided text in a concise paragraph"
       );
+
+      const response = await axios.post("/api/ai/summarize", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.summary) {
+        setSummary(response.data.summary);
+        setInputText(""); // Clear textarea
+        setUploadedFile({
+          name: response.data.fileName,
+          size: formatFileSize(file.size),
+        });
+      }
+    } catch (err) {
+      console.error("Error processing file:", err);
+      const errorMessage =
+        axios.isAxiosError(err) && err.response?.data?.error
+          ? err.response.data.error
+          : "Failed to process file";
+      setError(errorMessage);
+      setUploadedFile(null);
     } finally {
       setLoading(false);
       e.target.value = "";
     }
   };
 
-  const readFileAsText = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result;
-        if (typeof result === "string") {
-          resolve(result);
-        } else if (result instanceof ArrayBuffer) {
-          // For binary files, we'll send as buffer
-          resolve(result.toString());
-        } else {
-          reject(new Error("Failed to read file"));
-        }
-      };
-      reader.onerror = () => reject(new Error("File read error"));
-      reader.readAsArrayBuffer(file);
-    });
-  };
+
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
