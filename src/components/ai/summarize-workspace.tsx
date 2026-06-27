@@ -138,26 +138,15 @@ export function SummarizeWorkspace() {
         const result = event.target?.result;
         if (typeof result === "string") {
           resolve(result);
+        } else if (result instanceof ArrayBuffer) {
+          // For binary files, we'll send as buffer
+          resolve(result.toString());
         } else {
           reject(new Error("Failed to read file"));
         }
       };
       reader.onerror = () => reject(new Error("File read error"));
-
-      // Handle different file types
-      if (file.type === "application/pdf") {
-        reject(new Error("PDF files need special handling - please use .txt or .md files"));
-      } else if (
-        file.type ===
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-        file.name.endsWith(".docx")
-      ) {
-        reject(new Error("DOCX files require additional setup - please convert to .txt or .md"));
-      } else if (file.type === "application/msword" || file.name.endsWith(".doc")) {
-        reject(new Error("DOC files require additional setup - please convert to .txt or .md"));
-      } else {
-        reader.readAsText(file);
-      }
+      reader.readAsArrayBuffer(file);
     });
   };
 
@@ -306,7 +295,7 @@ export function SummarizeWorkspace() {
           <input
             ref={fileRef}
             type="file"
-            accept=".txt,.md"
+            accept=".txt,.pdf,.docx,.doc,.xlsx,.xls,.csv,.md"
             onChange={handleFileUpload}
             className="hidden"
           />
@@ -334,6 +323,12 @@ export function SummarizeWorkspace() {
           </button>
         </div>
       )}
+
+      {/* Supported formats info */}
+      <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700">
+        <p className="font-medium mb-1">Supported formats:</p>
+        <p>📄 TXT • 📕 PDF • 📘 DOCX • 📙 DOC • 📊 XLSX • 📗 XLS • 📋 CSV • 📝 MD</p>
+      </div>
 
       {/* Error message */}
       {error && (

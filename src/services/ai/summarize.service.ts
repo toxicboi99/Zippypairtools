@@ -1,5 +1,8 @@
 import { ChatGroq } from "@langchain/groq";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import * as XLSX from "xlsx";
+// @ts-ignore - docx-parser doesn't have type definitions
+import { DocxParser } from "docx-parser";
 
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -7,6 +10,7 @@ const model = new ChatGroq({
 });
 
 export type BulletStyle = "dash" | "asterisk" | "number" | "plus" | "arrow";
+export type SupportedFileType = "txt" | "pdf" | "docx" | "doc" | "xlsx" | "xls" | "csv" | "md";
 
 export interface SummarizeOptions {
   text: string;
@@ -42,28 +46,31 @@ export async function extractTextFromFile(
 
   let text = "";
 
-  if (fileType === "text/plain" || fileName.endsWith(".txt")) {
-    text = buffer.toString("utf-8");
-  } else if (fileType === "application/pdf" || fileName.endsWith(".pdf")) {
-    text = await extractTextFromPDF(buffer);
-  } else if (
-    fileType === "application/msword" ||
-    fileName.endsWith(".doc")
-  ) {
-    text = await extractTextFromDoc(buffer);
-  } else if (
-    fileType ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-    fileName.endsWith(".docx")
-  ) {
-    text = await extractTextFromDocx(buffer);
-  } else {
-    // Fallback: try to extract as text
-    text = buffer.toString("utf-8");
+  try {
+    if (fileType === "txt" || fileType === "md") {
+      text = extractTextPlain(buffer);
+    } else if (fileType === "pdf") {
+      text = await extractTextFromPDF(buffer);
+    } else if (fileType === "docx") {
+      text = await extractTextFromDocx(buffer);
+    } else if (fileType === "doc") {
+      text = await extractTextFromDoc(buffer);
+    } else if (fileType === "xlsx" || fileType === "xls") {
+      text = extractTextFromExcel(buffer);
+    } else if (fileType === "csv") {
+      text = extractTextPlain(buffer);
+    } else {
+      // Fallback: try to extract as text
+      text = extractTextPlain(buffer);
+    }
+  } catch (error) {
+    console.error(`Error extracting ${fileType} file:`, error);
+    // Fallback to plain text extraction
+    text = extractTextPlain(buffer);
   }
 
   if (!text.trim()) {
-    throw new Error("Could not extract text from file");
+    throw new Error("Could not extract text from file - file may be empty or corrupted");
   }
 
   return {
@@ -71,6 +78,13 @@ export async function extractTextFromFile(
     fileName,
     fileType,
   };
+}
+
+/**
+ * Plain text extraction
+ */
+function extractTextPlain(buffer: Buffer): string {
+  return buffer.toString("utf-8");
 }
 
 /**
@@ -90,10 +104,10 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
         .join(" ");
       text += "\n";
     }
-    return text;
+    return text || "No text content found in PDF";
   } catch (error) {
     console.error("PDF extraction error:", error);
-    return buffer.toString("utf-8");
+    throw new Error("Failed to extract PDF content");
   }
 }
 
@@ -102,41 +116,89 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
  */
 async function extractTextFromDocx(buffer: Buffer): Promise<string> {
   try {
-    // For now, return error message - DOCX requires complex parsing
-    // Users can install 'mammoth' package for full DOCX support
-    throw new Error("DOCX files require the 'mammoth' package. Please convert to TXT or PDF.");
+    const parser = new DocxParser();
+    const docData = parser.parseXML(buffer.toString("binary"));
+    
+    let text = "";
+    if (docData && docData.paragraphs) {
+      text = docData.paragraphs
+        .map((para: any) => {
+          if (typeof para === "string") return para;
+          if (para.text) return para.text;
+          return "";
+        })
+        .join("\n");
+    }
+    
+    return text || "No text content found in DOCX";
   } catch (error) {
     console.error("DOCX extraction error:", error);
-    return buffer.toString("utf-8");
+    // Fallback: try to extract as plain text
+    return extractTextPlain(buffer);
   }
 }
 
 /**
- * Extract text from DOC
+ * Extract text from DOC (older Word format)
  */
 async function extractTextFromDoc(buffer: Buffer): Promise<string> {
   try {
-    // For .doc files, use a simple extraction or return buffer as text
-    return buffer.toString("utf-8");
+    // DOC format is complex; attempt basic extraction
+    // Look for text patterns in the binary data
+    const text = buffer.toString("binary");
+    const cleanedText = text
+      .replace(/[^\x20-\x7E\n\r\t]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    
+    if (cleanedText.length > 50) {
+      return cleanedText;
+    }
+    throw new Error("Could not extract meaningful text from DOC");
   } catch (error) {
     console.error("DOC extraction error:", error);
-    return buffer.toString("utf-8");
+    throw new Error("DOC format not fully supported - please convert to DOCX or another format");
+  }
+}
+
+/**
+ * Extract text from Excel (XLSX/XLS)
+ */
+function extractTextFromExcel(buffer: Buffer): string {
+  try {
+    const workbook = XLSX.read(buffer, { type: "buffer" });
+    let text = "";
+
+    // Iterate through all sheets
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      text += `Sheet: ${sheetName}\n`;
+      text += XLSX.utils.sheet_to_csv(sheet) + "\n\n";
+    }
+
+    return text || "No content found in Excel file";
+  } catch (error) {
+    console.error("Excel extraction error:", error);
+    throw new Error("Failed to extract Excel content");
   }
 }
 
 /**
  * Get file type from filename
  */
-function getFileType(fileName: string): string {
-  const ext = fileName.toLowerCase().split(".").pop();
-  const mimeTypes: { [key: string]: string } = {
-    txt: "text/plain",
-    pdf: "application/pdf",
-    doc: "application/msword",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    md: "text/markdown",
+function getFileType(fileName: string): SupportedFileType {
+  const ext = fileName.toLowerCase().split(".").pop() || "";
+  const typeMap: { [key: string]: SupportedFileType } = {
+    txt: "txt",
+    pdf: "pdf",
+    doc: "doc",
+    docx: "docx",
+    xls: "xls",
+    xlsx: "xlsx",
+    csv: "csv",
+    md: "md",
   };
-  return mimeTypes[ext || ""] || "text/plain";
+  return typeMap[ext] || "txt";
 }
 
 /**
