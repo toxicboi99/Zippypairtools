@@ -3,8 +3,7 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import * as XLSX from "xlsx";
 // @ts-ignore - mammoth doesn't have complete type definitions
 import mammoth from "mammoth";
-// @ts-ignore - pdf-parse doesn't have complete type definitions
-import pdf from "pdf-parse/lib/pdf-parse.js";
+import { PDFParse } from "pdf-parse";
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
   model: "llama-3.3-70b-versatile",
@@ -103,9 +102,11 @@ function extractTextPlain(buffer: Buffer): string {
  * Extract text from PDF
  */
 async function extractTextFromPDF(buffer: Buffer): Promise<string> {
+  const parser = new PDFParse({ data: new Uint8Array(buffer) });
+
   try {
     console.log("[PDF] Starting PDF extraction");
-    const data = await pdf(buffer);
+    const data = await parser.getText();
     console.log("[PDF] PDF parsed, text length:", data?.text?.length || 0);
     
     if (data && data.text && data.text.trim()) {
@@ -117,6 +118,8 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
   } catch (error) {
     console.error("[PDF] PDF extraction error:", error);
     throw new Error("Failed to extract text from PDF file");
+  } finally {
+    await parser.destroy();
   }
 }
 
