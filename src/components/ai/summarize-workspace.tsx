@@ -193,9 +193,19 @@ export function SummarizeWorkspace() {
       setSummary(response.data);
     } catch (err) {
       console.error("Error:", err);
-      setError(
-        "Error: Unable to connect to AI service. Please check if the API endpoint exists."
-      );
+      let errorMessage = "Unable to connect to AI service. Please check if the API endpoint exists.";
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.data?.error) {
+          errorMessage = err.response.data.error;
+        } else if (err.message) {
+          errorMessage = `Network error: ${err.message}`;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
+      setError(`Error: ${errorMessage}`);
       setSummary("");
     } finally {
       setLoading(false);

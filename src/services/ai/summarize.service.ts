@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 // @ts-ignore - mammoth doesn't have complete type definitions
 import mammoth from "mammoth";
 // @ts-ignore - pdf-parse doesn't have complete type definitions
-import pdf from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
   model: "llama-3.3-70b-versatile",
