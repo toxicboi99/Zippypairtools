@@ -23,7 +23,7 @@ export function CategorySections() {
             const allCategoryTools = tools.filter(
               (tool) => tool.categorySlug === category.slug,
             );
-            const categoryTools = allCategoryTools.slice(0, 4);
+            const categoryTools = allCategoryTools;
             const Icon = category.icon;
             const tone = categoryToneClasses[category.tone];
 
@@ -80,6 +80,7 @@ export function CategorySections() {
                       icon={tool.icon}
                       slug={tool.slug}
                       category={tool.category}
+                      href={tool.href}
                     />
                   ))}
                 </div>

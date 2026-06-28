@@ -1,10 +1,15 @@
-import { handleJsonRequest } from "@/app/api/_shared";
-import { calculatePercentage } from "@/services/calculators/percentage.service";
-import { percentageRequestSchema } from "@/validators/calculator.validator";
+import {
+  handleCalculationToolGet,
+  handleCalculationToolPost,
+} from "@/app/api/_calculation-route";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+export async function GET() {
+  return handleCalculationToolGet("calculators", "percentage");
+}
+
 export async function POST(request: Request) {
-  return handleJsonRequest(request, percentageRequestSchema, calculatePercentage);
+  return handleCalculationToolPost(request, "calculators", "percentage");
 }

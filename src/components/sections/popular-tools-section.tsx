@@ -24,6 +24,7 @@ export function PopularToolsSection() {
               icon={tool.icon}
               slug={tool.slug}
               category={tool.category}
+              href={tool.href}
             />
           ))}
         </div>

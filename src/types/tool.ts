@@ -10,7 +10,11 @@ export type ToolCategorySlug =
   | "developer"
   | "calculator"
   | "converter"
-  | "security";
+  | "security"
+  | "text"
+  | "seo"
+  | "social"
+  | "file";
 
 export interface ToolCategory {
   slug: ToolCategorySlug;
@@ -28,6 +32,7 @@ export interface Tool {
   categorySlug: ToolCategorySlug;
   icon: LucideIcon;
   keywords: string[];
+  href?: string;
   popular?: boolean;
 }
 
@@ -37,6 +42,7 @@ export interface ToolCardProps {
   icon: LucideIcon;
   slug: string;
   category: string;
+  href?: string;
 }
 
 export interface SiteStat {

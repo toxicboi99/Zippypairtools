@@ -13,6 +13,7 @@ export function ToolCard({
   icon: Icon,
   slug,
   category,
+  href,
 }: ToolCardProps) {
   const tone = getToneForCategoryTitle(category);
 
@@ -43,7 +44,7 @@ export function ToolCard({
         </div>
 
         <Link
-          href={`/tools/${slug}`}
+          href={href ?? `/tools/${slug}`}
           aria-label={`Open ${title}`}
           className="mt-auto inline-flex items-center gap-2 text-sm font-medium text-primary transition group-hover:gap-3"
         >

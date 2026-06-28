@@ -1,10 +1,15 @@
-import { handleJsonRequest } from "@/app/api/_shared";
-import { calculateAge } from "@/services/calculators/age.service";
-import { ageRequestSchema } from "@/validators/calculator.validator";
+import {
+  handleCalculationToolGet,
+  handleCalculationToolPost,
+} from "@/app/api/_calculation-route";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+export async function GET() {
+  return handleCalculationToolGet("calculators", "age");
+}
+
 export async function POST(request: Request) {
-  return handleJsonRequest(request, ageRequestSchema, calculateAge);
+  return handleCalculationToolPost(request, "calculators", "age");
 }

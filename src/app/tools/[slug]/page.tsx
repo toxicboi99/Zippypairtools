@@ -21,9 +21,11 @@ interface ToolPageProps {
 }
 
 export function generateStaticParams() {
-  return tools.map((tool) => ({
-    slug: tool.slug,
-  }));
+  return tools
+    .filter((tool) => !tool.slug.includes("/"))
+    .map((tool) => ({
+      slug: tool.slug,
+    }));
 }
 
 export async function generateMetadata({
@@ -196,7 +198,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
                 return (
                   <Link
                     key={item.slug}
-                    href={`/tools/${item.slug}`}
+                    href={item.href ?? `/tools/${item.slug}`}
                     className="rounded-lg border bg-card p-4 transition hover:border-primary/40"
                   >
                     <RelatedIcon
