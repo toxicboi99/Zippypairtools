@@ -3,16 +3,16 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { PDFToolsWorkspace } from "@/components/pdf/pdf-tools-workspace";
-import { SummarizeWorkspace } from "@/components/ai/summarize-workspace";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { getPDFToolConfig } from "@/constants/pdf-tools";
-import { siteConfig } from "@/constants/site";
-import { categories, getToolBySlug, tools } from "@/constants/tools";
-import { getToneForCategoryTitle } from "@/lib/category-tones";
-import { cn } from "@/lib/utils";
+import { PDFToolsWorkspace } from "@/frontend/components/pdf/pdf-tools-workspace";
+import { SummarizeWorkspace } from "@/frontend/components/ai/summarize-workspace";
+import { Badge } from "@/frontend/components/ui/badge";
+import { Button } from "@/frontend/components/ui/button";
+import { Card, CardContent } from "@/frontend/components/ui/card";
+import { getPDFToolConfig } from "@/frontend/constants/pdf-tools";
+import { siteConfig } from "@/frontend/constants/site";
+import { categories, getToolBySlug, tools } from "@/frontend/constants/tools";
+import { getToneForCategoryTitle } from "@/frontend/utils/category-tones";
+import { cn } from "@/frontend/utils/cn";
 
 interface ToolPageProps {
   params: Promise<{

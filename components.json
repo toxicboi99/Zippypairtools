@@ -9,11 +9,11 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
+    "components": "@/frontend/components",
+    "utils": "@/frontend/utils/cn",
+    "ui": "@/frontend/components/ui",
+    "lib": "@/backend/lib",
+    "hooks": "@/frontend/hooks"
   },
   "iconLibrary": "lucide"
 }

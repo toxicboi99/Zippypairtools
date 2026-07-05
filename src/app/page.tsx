@@ -1,9 +1,9 @@
-import { CategorySections } from "@/components/sections/category-sections";
-import { HeroSection } from "@/components/sections/hero-section";
-import { PopularToolsSection } from "@/components/sections/popular-tools-section";
-import { SearchToolsSection } from "@/components/sections/search-tools-section";
-import { siteConfig } from "@/constants/site";
-import { categories } from "@/constants/tools";
+import { CategorySections } from "@/frontend/components/sections/category-sections";
+import { HeroSection } from "@/frontend/components/sections/hero-section";
+import { PopularToolsSection } from "@/frontend/components/sections/popular-tools-section";
+import { SearchToolsSection } from "@/frontend/components/sections/search-tools-section";
+import { siteConfig } from "@/frontend/constants/site";
+import { categories } from "@/frontend/constants/tools";
 
 const structuredData = {
   "@context": "https://schema.org",

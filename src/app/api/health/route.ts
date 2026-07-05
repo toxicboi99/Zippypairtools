@@ -1,8 +1,5 @@
-import { NextResponse } from "next/server";
+import { healthController } from "@/backend/controllers/health/health.controller";
 
 export async function GET() {
-  return NextResponse.json({
-    success: true,
-    message: "Backend Running",
-  });
+  return healthController();
 }

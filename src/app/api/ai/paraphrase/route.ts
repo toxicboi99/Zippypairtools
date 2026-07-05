@@ -1,10 +1,8 @@
-import { handleJsonRequest } from "@/app/api/_shared";
-import { paraphraseText } from "@/services/ai/paraphrase.service";
-import { paraphraseRequestSchema } from "@/validators/ai.validator";
+import { paraphraseController } from "@/backend/controllers/ai/paraphrase.controller";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  return handleJsonRequest(request, paraphraseRequestSchema, paraphraseText);
+  return paraphraseController(request);
 }

@@ -1,7 +1,7 @@
 import {
-  handleCalculationToolGet,
-  handleCalculationToolPost,
-} from "@/app/api/_calculation-route";
+  calculationToolGetController,
+  calculationToolPostController,
+} from "@/backend/controllers/calculators/calculation.controller";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET(
   context: ToolRouteContext,
 ) {
   const { category, slug } = await context.params;
-  return handleCalculationToolGet(category, slug);
+  return calculationToolGetController(category, slug);
 }
 
 export async function POST(
@@ -26,5 +26,5 @@ export async function POST(
   context: ToolRouteContext,
 ) {
   const { category, slug } = await context.params;
-  return handleCalculationToolPost(request, category, slug);
+  return calculationToolPostController(request, category, slug);
 }

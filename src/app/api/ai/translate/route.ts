@@ -1,10 +1,8 @@
-import { handleJsonRequest } from "@/app/api/_shared";
-import { translateText } from "@/services/ai/translate.service";
-import { translateRequestSchema } from "@/validators/ai.validator";
+import { translateController } from "@/backend/controllers/ai/translate.controller";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  return handleJsonRequest(request, translateRequestSchema, translateText);
+  return translateController(request);
 }

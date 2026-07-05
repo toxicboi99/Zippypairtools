@@ -9,14 +9,14 @@ import {
   getExpandedCategory,
   getExpandedTool,
   getRelatedExpandedTools,
-} from "@/data/expanded-tools";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { siteConfig } from "@/constants/site";
+} from "@/frontend/data/expanded-tools";
+import { Badge } from "@/frontend/components/ui/badge";
+import { Card, CardContent } from "@/frontend/components/ui/card";
+import { siteConfig } from "@/frontend/constants/site";
 
 const ExpandedToolWorkspace = dynamic(
   () =>
-    import("@/components/tools/expanded-tool-workspace").then(
+    import("@/frontend/components/tools/expanded-tool-workspace").then(
       (mod) => mod.ExpandedToolWorkspace,
     ),
   {

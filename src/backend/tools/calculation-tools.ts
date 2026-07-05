@@ -1,6 +1,6 @@
 import { z, ZodError } from "zod";
 
-import { ApiError } from "@/utils/api-error";
+import { ApiError } from "@/backend/utils/api-error";
 
 export type CalculationCategory = "calculators" | "conversion";
 

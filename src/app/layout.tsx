@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
-import { siteConfig } from "@/constants/site";
+import { Footer } from "@/frontend/components/layout/footer";
+import { Navbar } from "@/frontend/components/layout/navbar";
+import { siteConfig } from "@/frontend/constants/site";
 import "./globals.css";
 
 const themeInitScript = `
