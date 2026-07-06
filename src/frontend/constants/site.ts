@@ -5,7 +5,10 @@ export const siteConfig = {
   shortName: "ZippyPair",
   description:
     "A fast, production-ready online toolbox for documents, images, media, AI writing, developer utilities, calculators, conversions, and security helpers.",
-  url: "https://zippypair.tools",
+  url: "https://www.zippypair.online",
+  domain: "www.zippypair.online",
+  contactEmail: "support@zippypair.online",
+  gtmId: "GTM-KCDNRPCX",
 };
 
 export const navLinks = [
@@ -48,16 +51,18 @@ export const footerColumns = [
       { label: "Popular tools", href: "#popular" },
       { label: "Search", href: "#tools-search" },
       { label: "Categories", href: "#categories" },
-      { label: "Status", href: "#" },
+      { label: "FAQs", href: "/faqs" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Privacy", href: "#" },
+      { label: "About", href: "/about" },
+      { label: "Blog", href: "/blog" },
+      { label: "Contact", href: "/contact" },
+      { label: "Privacy", href: "/privacy-policy" },
+      { label: "Terms", href: "/terms-and-conditions" },
+      { label: "Accessibility", href: "/accessibility" },
     ],
   },
 ];

@@ -12,6 +12,12 @@ import {
 } from "@/frontend/data/expanded-tools";
 import { Badge } from "@/frontend/components/ui/badge";
 import { Card, CardContent } from "@/frontend/components/ui/card";
+import {
+  JsonLdScript,
+  breadcrumbSchema,
+  faqSchema,
+  softwareApplicationSchema,
+} from "@/frontend/constants/seo";
 import { siteConfig } from "@/frontend/constants/site";
 
 const ExpandedToolWorkspace = dynamic(
@@ -97,27 +103,41 @@ export default async function ExpandedToolPage({
 
   const categoryData = getExpandedCategory(tool.categorySlug);
   const relatedTools = getRelatedExpandedTools(tool);
-  const path = `${siteConfig.url}/tools/${tool.categorySlug}/${tool.slug}`;
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: tool.title,
-    description: tool.description,
-    url: path,
-    applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Any",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
+  const path = `/tools/${tool.categorySlug}/${tool.slug}`;
+  const faqs = [
+    {
+      question: `What is ${tool.title}?`,
+      answer: `${tool.title} is a free ${tool.category.toLowerCase()} utility that provides ${tool.description.toLowerCase()}`,
     },
-  };
+    {
+      question: `Who should use ${tool.title}?`,
+      answer:
+        "It is useful for people who need a quick browser-based workflow with clear inputs, settings, preview states, and copy-ready or download-ready output.",
+    },
+    {
+      question: `Does ${tool.title} require installation?`,
+      answer:
+        "No. The tool is designed to run from the ZippyPair Tools website without installing desktop software.",
+    },
+  ];
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      <JsonLdScript
+        data={[
+          softwareApplicationSchema({
+            name: tool.title,
+            description: tool.description,
+            path,
+            keywords: tool.keywords,
+          }),
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: categoryData?.title ?? tool.category, path: "/#categories" },
+            { name: tool.title, path },
+          ]),
+          faqSchema(faqs),
+        ]}
       />
       <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -128,6 +148,30 @@ export default async function ExpandedToolPage({
             <ArrowLeft aria-hidden="true" className="size-4" />
             Back to categories
           </Link>
+
+          <nav
+            aria-label="Breadcrumb"
+            className="mt-5 text-sm text-muted-foreground"
+          >
+            <ol className="flex flex-wrap items-center gap-2">
+              <li>
+                <Link href="/" className="transition hover:text-foreground">
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link
+                  href="/#categories"
+                  className="transition hover:text-foreground"
+                >
+                  {categoryData?.title ?? tool.category}
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="text-foreground">{tool.title}</li>
+            </ol>
+          </nav>
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div>
@@ -167,6 +211,55 @@ export default async function ExpandedToolPage({
           </div>
 
           <ExpandedToolWorkspace tool={tool} relatedTools={relatedTools} />
+
+          <section className="mt-12 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                title: "Short answer",
+                text: `${tool.title} helps you complete a focused ${tool.category.toLowerCase()} task from the browser with a clear input and output workflow.`,
+              },
+              {
+                title: "Common use cases",
+                text: "Use it for daily productivity, quick file or text preparation, repeatable team workflows, and fast checks before publishing or sharing work.",
+              },
+              {
+                title: "Result review",
+                text: "Review generated, converted, or processed output carefully before relying on it for client, legal, financial, academic, or production work.",
+              },
+            ].map((item) => (
+              <Card key={item.title}>
+                <CardContent className="p-5">
+                  <h2 className="font-semibold text-foreground">{item.title}</h2>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {item.text}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </section>
+
+          <section className="mt-12" aria-labelledby="expanded-tool-faqs">
+            <h2
+              id="expanded-tool-faqs"
+              className="text-2xl font-semibold text-foreground"
+            >
+              {tool.title} FAQs
+            </h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {faqs.map((item) => (
+                <Card key={item.question}>
+                  <CardContent className="p-5">
+                    <h3 className="font-semibold text-foreground">
+                      {item.question}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {item.answer}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
     </>
