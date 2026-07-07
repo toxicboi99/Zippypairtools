@@ -3,7 +3,11 @@ import Script from "next/script";
 
 import { Footer } from "@/frontend/components/layout/footer";
 import { Navbar } from "@/frontend/components/layout/navbar";
-import { organizationSchema, websiteSchema } from "@/frontend/constants/seo";
+import {
+  organizationSchema,
+  webApplicationSchema,
+  websiteSchema,
+} from "@/frontend/constants/seo";
 import { siteConfig } from "@/frontend/constants/site";
 import "./globals.css";
 
@@ -11,14 +15,14 @@ const themeInitScript = `
 (() => {
   try {
     const storedTheme = window.localStorage.getItem("zippypair-theme");
-    const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
+    const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "light";
     const root = document.documentElement;
 
     root.classList.toggle("dark", theme === "dark");
     root.style.colorScheme = theme;
   } catch {
-    document.documentElement.classList.add("dark");
-    document.documentElement.style.colorScheme = "dark";
+    document.documentElement.classList.remove("dark");
+    document.documentElement.style.colorScheme = "light";
   }
 })();
 `;
@@ -44,8 +48,32 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.author }],
+  creator: siteConfig.creator,
+  publisher: siteConfig.publisher,
+  category: "Online Tools",
+  keywords: [
+    "ZippyPair",
+    "ZippyPair Tools",
+    "free online tools",
+    "PDF tools",
+    "image tools",
+    "AI writing tools",
+    "developer tools",
+    "calculators",
+    "converters",
+  ],
   alternates: {
     canonical: "/",
+  },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
   },
   openGraph: {
     title: siteConfig.name,
@@ -53,11 +81,21 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     siteName: siteConfig.name,
     type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/opengraph-image.svg",
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.name} preview image`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
+    images: ["/opengraph-image.svg"],
   },
   robots: {
     index: true,
@@ -83,13 +121,17 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationSchema, websiteSchema]),
+            __html: JSON.stringify([
+              organizationSchema,
+              websiteSchema,
+              webApplicationSchema,
+            ]),
           }}
         />
       </head>

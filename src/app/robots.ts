@@ -9,23 +9,13 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/api/",
-          "/_next/",
           "/admin/",
           "/dashboard/",
           "/private/",
-          "/server-sitemap.xml",
+          "/share/",
         ],
       },
     ],
-    sitemap: [
-      `${siteConfig.url}/sitemap.xml`,
-      `${siteConfig.url}/sitemap-pages.xml`,
-      `${siteConfig.url}/sitemap-tools.xml`,
-      `${siteConfig.url}/sitemap-blog.xml`,
-      `${siteConfig.url}/sitemap-categories.xml`,
-      `${siteConfig.url}/sitemap-images.xml`,
-    ],
-    host: siteConfig.url,
+    sitemap: `${siteConfig.url}/sitemap.xml`,
   };
 }

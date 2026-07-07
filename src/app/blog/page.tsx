@@ -6,9 +6,12 @@ import {
   JsonLdScript,
   breadcrumbSchema,
   buildPageMetadata,
+  collectionPageSchema,
   faqSchema,
+  itemListSchema,
 } from "@/frontend/constants/seo";
 import { siteConfig } from "@/frontend/constants/site";
+import { blogPosts } from "@/frontend/data/blog-posts";
 
 export const metadata = buildPageMetadata({
   title: "ZippyPair Tools Blog",
@@ -17,27 +20,6 @@ export const metadata = buildPageMetadata({
   path: "/blog",
   keywords: ["online tools blog", "PDF tools guide", "AI writing tools", "ZippyPair"],
 });
-
-const guides = [
-  {
-    title: "How to choose the right PDF workflow",
-    description:
-      "Use merge, split, compress, convert, and remove-page tools based on the exact document outcome you need.",
-    href: "/tools/pdf-merge",
-  },
-  {
-    title: "A quick checklist before using AI writing tools",
-    description:
-      "Set the audience, length, tone, and review standard before publishing AI-assisted summaries, rewrites, or translations.",
-    href: "/tools/summarize",
-  },
-  {
-    title: "What to check before uploading files online",
-    description:
-      "Review file sensitivity, ownership, output requirements, and whether a temporary online utility is appropriate for the task.",
-    href: "/privacy-policy",
-  },
-];
 
 const faqs = [
   {
@@ -61,6 +43,19 @@ export default function BlogPage() {
             { name: "Home", path: "/" },
             { name: "Blog", path: "/blog" },
           ]),
+          collectionPageSchema({
+            name: "ZippyPair Tools Blog",
+            description:
+              "Practical guides for choosing and using online tools responsibly.",
+            path: "/blog",
+          }),
+          itemListSchema(
+            blogPosts.map((post) => ({
+              name: post.title,
+              path: `/blog/${post.slug}`,
+              description: post.description,
+            })),
+          ),
           faqSchema(faqs),
           {
             "@context": "https://schema.org",
@@ -87,10 +82,10 @@ export default function BlogPage() {
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {guides.map((guide) => (
+            {blogPosts.map((guide) => (
               <Link
                 key={guide.title}
-                href={guide.href}
+                href={`/blog/${guide.slug}`}
                 className="group rounded-lg border bg-card p-5 transition hover:border-primary/40"
               >
                 <FileText aria-hidden="true" className="size-5 text-primary" />

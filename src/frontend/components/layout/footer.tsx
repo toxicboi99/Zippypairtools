@@ -1,13 +1,7 @@
 import Link from "next/link";
-import { Github, Linkedin, Twitter, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 
 import { footerColumns, siteConfig } from "@/frontend/constants/site";
-
-const socialLinks = [
-  { label: "GitHub", href: "#", icon: Github },
-  { label: "Twitter", href: "#", icon: Twitter },
-  { label: "LinkedIn", href: "#", icon: Linkedin },
-];
 
 export function Footer() {
   return (
@@ -26,22 +20,9 @@ export function Footer() {
             <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
               {siteConfig.description}
             </p>
-            <div className="mt-5 flex items-center gap-2">
-              {socialLinks.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    aria-label={item.label}
-                    className="flex size-9 items-center justify-center rounded-md border bg-background text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <Icon aria-hidden="true" className="size-4" />
-                  </a>
-                );
-              })}
-            </div>
+            <p className="mt-5 text-sm font-medium text-foreground">
+              Made with ❤️ by {siteConfig.creator}
+            </p>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-3">
@@ -53,12 +34,12 @@ export function Footer() {
                 <ul className="mt-4 space-y-3">
                   {column.links.map((link) => (
                     <li key={link.label}>
-                      <a
+                      <Link
                         href={link.href}
                         className="text-sm text-muted-foreground transition hover:text-foreground"
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -68,7 +49,7 @@ export function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>Copyright 2026 {siteConfig.name}. All rights reserved.</p>
+          <p>{siteConfig.copyright}</p>
           <p>Built for fast, accessible, responsive tool discovery.</p>
         </div>
       </div>

@@ -159,8 +159,14 @@ export function bufferToBase64(buffer: Buffer | Uint8Array) {
   return Buffer.from(buffer).toString("base64");
 }
 
-export function getFormFiles(formData: FormData, key = "files") {
-  return formData.getAll(key).filter(isFileLike);
+export function getFormFiles(formData: FormData, key = "files"): FileLike[] {
+  const files: FileLike[] = [];
+
+  for (const entry of formData.getAll(key)) {
+    if (isFileLike(entry)) files.push(entry);
+  }
+
+  return files;
 }
 
 export function getRequiredFormFile(formData: FormData, key = "file") {

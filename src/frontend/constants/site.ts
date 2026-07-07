@@ -3,18 +3,23 @@ import type { SiteStat } from "@/frontend/types/tool";
 export const siteConfig = {
   name: "ZippyPair Tools",
   shortName: "ZippyPair",
+  organization: "ZippyPair",
+  publisher: "ZippyPair",
+  author: "Ritesh Prasad Sah",
+  creator: "Ritesh Prasad Sah",
+  copyright: "© 2026 ZippyPair. All Rights Reserved.",
   description:
     "A fast, production-ready online toolbox for documents, images, media, AI writing, developer utilities, calculators, conversions, and security helpers.",
-  url: "https://www.zippypair.online",
-  domain: "www.zippypair.online",
+  url: "https://zippypair.online",
+  domain: "zippypair.online",
   contactEmail: "support@zippypair.online",
   gtmId: "GTM-KCDNRPCX",
 };
 
 export const navLinks = [
-  { label: "Search", href: "#tools-search" },
-  { label: "Popular", href: "#popular" },
-  { label: "Categories", href: "#categories" },
+  { label: "Search", href: "/#tools-search" },
+  { label: "Popular", href: "/#popular" },
+  { label: "Categories", href: "/#categories" },
 ];
 
 export const heroStats: SiteStat[] = [
@@ -39,18 +44,18 @@ export const footerColumns = [
   {
     title: "Tools",
     links: [
-      { label: "PDF tools", href: "#categories" },
-      { label: "Image tools", href: "#categories" },
-      { label: "Developer tools", href: "#categories" },
-      { label: "Security tools", href: "#categories" },
+      { label: "PDF tools", href: "/categories/pdf" },
+      { label: "Image tools", href: "/categories/image" },
+      { label: "Developer tools", href: "/categories/developer" },
+      { label: "Security tools", href: "/categories/security" },
     ],
   },
   {
     title: "Product",
     links: [
-      { label: "Popular tools", href: "#popular" },
-      { label: "Search", href: "#tools-search" },
-      { label: "Categories", href: "#categories" },
+      { label: "Popular tools", href: "/#popular" },
+      { label: "Search", href: "/#tools-search" },
+      { label: "Categories", href: "/#categories" },
       { label: "FAQs", href: "/faqs" },
     ],
   },
@@ -63,6 +68,13 @@ export const footerColumns = [
       { label: "Privacy", href: "/privacy-policy" },
       { label: "Terms", href: "/terms-and-conditions" },
       { label: "Accessibility", href: "/accessibility" },
+      { label: "Disclaimer", href: "/disclaimer" },
+      { label: "Cookies", href: "/cookie-policy" },
+      { label: "Editorial Policy", href: "/editorial-policy" },
+      { label: "Content Policy", href: "/content-policy" },
+      { label: "Advertising Policy", href: "/advertising-policy" },
+      { label: "DMCA", href: "/dmca" },
+      { label: "Community Guidelines", href: "/community-guidelines" },
     ],
   },
 ];

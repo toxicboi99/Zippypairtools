@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Boxes } from "lucide-react";
 
 import { SectionHeading } from "@/frontend/components/sections/section-heading";
@@ -60,15 +61,26 @@ export function CategorySections() {
                       </p>
                     </div>
                   </div>
-                  <a
-                    href="#tools-search"
-                    className={cn(
-                      "text-sm font-medium transition hover:opacity-80",
-                      tone.text,
-                    )}
-                  >
-                    Search this category
-                  </a>
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href={`/categories/${category.slug}`}
+                      className={cn(
+                        "text-sm font-medium transition hover:opacity-80",
+                        tone.text,
+                      )}
+                    >
+                      View category
+                    </Link>
+                    <a
+                      href="#tools-search"
+                      className={cn(
+                        "text-sm font-medium transition hover:opacity-80",
+                        tone.text,
+                      )}
+                    >
+                      Search this category
+                    </a>
+                  </div>
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

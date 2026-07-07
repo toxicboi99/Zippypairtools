@@ -10,12 +10,16 @@ import {
   getExpandedTool,
   getRelatedExpandedTools,
 } from "@/frontend/data/expanded-tools";
+import { getCanonicalCategoryPath } from "@/frontend/lib/sitemap";
 import { Badge } from "@/frontend/components/ui/badge";
 import { Card, CardContent } from "@/frontend/components/ui/card";
 import {
   JsonLdScript,
   breadcrumbSchema,
+  buildPageMetadata,
   faqSchema,
+  howToSchema,
+  imageObjectSchema,
   softwareApplicationSchema,
 } from "@/frontend/constants/seo";
 import { siteConfig } from "@/frontend/constants/site";
@@ -67,28 +71,14 @@ export async function generateMetadata({
   if (!tool) return {};
 
   const path = `/tools/${tool.categorySlug}/${tool.slug}`;
-  const title = `${tool.title} | ${siteConfig.name}`;
 
-  return {
-    title,
+  return buildPageMetadata({
+    title: `${tool.title} for ${tool.category}`,
     description: tool.description,
-    keywords: tool.keywords,
-    alternates: {
-      canonical: path,
-    },
-    openGraph: {
-      title,
-      description: tool.description,
-      url: path,
-      siteName: siteConfig.name,
-      type: "website",
-    },
-    twitter: {
-      card: "summary",
-      title,
-      description: tool.description,
-    },
-  };
+    path,
+    keywords: [tool.title, tool.category, ...tool.keywords],
+    category: tool.category,
+  });
 }
 
 export default async function ExpandedToolPage({
@@ -120,6 +110,28 @@ export default async function ExpandedToolPage({
         "No. The tool is designed to run from the ZippyPair Tools website without installing desktop software.",
     },
   ];
+  const detailSections = [
+    {
+      heading: `About ${tool.title}`,
+      body: `${tool.title} is a focused ${tool.category.toLowerCase()} page on ${siteConfig.name}. It explains the task, provides a practical workspace, and gives search engines a clear entity relationship between the category, the tool, and related utility pages.`,
+    },
+    {
+      heading: "Features",
+      body: "The page includes a dedicated input area, settings, preview or result state, accessible form controls, related tools, FAQs, breadcrumbs, and a call-to-action for continuing the workflow.",
+    },
+    {
+      heading: "Benefits",
+      body: `Use ${tool.title} for quick browser-based work when you want a clear interface, fewer distractions, and a reviewable output. The page is designed for repeated everyday tasks on desktop and mobile screens.`,
+    },
+    {
+      heading: "How it works",
+      body: "Add the required input, adjust the visible settings, run the tool, then review the result before copying, downloading, publishing, or sharing it. For high-stakes work, compare the output with your source material.",
+    },
+    {
+      heading: "Privacy information",
+      body: "Do not submit confidential, regulated, or sensitive files unless you are comfortable using an online utility. Public guidance on ZippyPair Tools encourages responsible inputs, transparent review, and careful handling of outputs.",
+    },
+  ];
 
   return (
     <>
@@ -133,10 +145,28 @@ export default async function ExpandedToolPage({
           }),
           breadcrumbSchema([
             { name: "Home", path: "/" },
-            { name: categoryData?.title ?? tool.category, path: "/#categories" },
+            {
+              name: categoryData?.title ?? tool.category,
+              path: getCanonicalCategoryPath(tool.categorySlug),
+            },
             { name: tool.title, path },
           ]),
           faqSchema(faqs),
+          howToSchema({
+            name: `How to use ${tool.title}`,
+            description: `A simple workflow for using ${tool.title} on ${siteConfig.name}.`,
+            steps: [
+              "Open the tool page and read the task description.",
+              "Add the required file, text, URL, or values.",
+              "Adjust the available settings for the result you need.",
+              "Run the workflow and review the output before using it.",
+            ],
+          }),
+          imageObjectSchema({
+            name: `${tool.title} preview image`,
+            path: "/opengraph-image.svg",
+            caption: `${tool.title} on ${siteConfig.name}`,
+          }),
         ]}
       />
       <section className="py-12 sm:py-16">
@@ -162,7 +192,7 @@ export default async function ExpandedToolPage({
               <li aria-hidden="true">/</li>
               <li>
                 <Link
-                  href="/#categories"
+                  href={getCanonicalCategoryPath(tool.categorySlug)}
                   className="transition hover:text-foreground"
                 >
                   {categoryData?.title ?? tool.category}
@@ -236,6 +266,29 @@ export default async function ExpandedToolPage({
                 </CardContent>
               </Card>
             ))}
+          </section>
+
+          <section className="mt-12" aria-labelledby="expanded-tool-details">
+            <h2
+              id="expanded-tool-details"
+              className="text-2xl font-semibold text-foreground"
+            >
+              {tool.title} guide
+            </h2>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              {detailSections.map((section) => (
+                <Card key={section.heading}>
+                  <CardContent className="p-5">
+                    <h3 className="font-semibold text-foreground">
+                      {section.heading}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {section.body}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </section>
 
           <section className="mt-12" aria-labelledby="expanded-tool-faqs">

@@ -7,12 +7,15 @@ import {
   JsonLdScript,
   buildPageMetadata,
   faqSchema,
+  imageObjectSchema,
+  itemListSchema,
   organizationSchema,
   softwareApplicationSchema,
+  webApplicationSchema,
   websiteSchema,
 } from "@/frontend/constants/seo";
 import { siteConfig } from "@/frontend/constants/site";
-import { categories } from "@/frontend/constants/tools";
+import { categories, popularTools } from "@/frontend/constants/tools";
 
 export const metadata = buildPageMetadata({
   title: "ZippyPair Tools",
@@ -54,11 +57,24 @@ export default function HomePage() {
         data={[
           organizationSchema,
           websiteSchema,
+          webApplicationSchema,
           softwareApplicationSchema({
             name: siteConfig.name,
             description: siteConfig.description,
             path: "/",
             keywords: categories.map((category) => category.title),
+          }),
+          itemListSchema(
+            popularTools.slice(0, 8).map((tool) => ({
+              name: tool.title,
+              path: tool.href ?? `/tools/${tool.slug}`,
+              description: tool.description,
+            })),
+          ),
+          imageObjectSchema({
+            name: `${siteConfig.name} preview image`,
+            path: "/opengraph-image.svg",
+            caption: siteConfig.description,
           }),
           faqSchema(homeFaqs),
         ]}

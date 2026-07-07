@@ -1,5 +1,4 @@
 import * as XLSX from "xlsx";
-// @ts-ignore - mammoth doesn't have complete type definitions
 import mammoth from "mammoth";
 
 import { runGroqChat } from "@/backend/lib/groq";
@@ -39,7 +38,7 @@ export async function extractTextFromFile(
     buffer = file;
   }
 
-  let text = "";
+  let text: string;
 
   try {
     if (fileType === "txt" || fileType === "md") {
@@ -97,7 +96,7 @@ async function extractTextFromPDF(buffer: Buffer): Promise<string> {
     }
   } catch (error) {
     console.error("[PDF] PDF extraction error:", error);
-    throw new Error("Failed to extract text from PDF file");
+    throw new Error("Failed to extract text from PDF file", { cause: error });
   } finally {
     await parser.destroy();
   }
@@ -140,7 +139,9 @@ async function extractTextFromDoc(buffer: Buffer): Promise<string> {
     throw new Error("Could not extract meaningful text from DOC");
   } catch (error) {
     console.error("DOC extraction error:", error);
-    throw new Error("DOC format not fully supported - please convert to DOCX or another format");
+    throw new Error("DOC format not fully supported - please convert to DOCX or another format", {
+      cause: error,
+    });
   }
 }
 
@@ -167,7 +168,7 @@ function extractTextFromExcel(buffer: Buffer): string {
     }
   } catch (error) {
     console.error("[Excel] Excel extraction error:", error);
-    throw new Error("Failed to extract Excel content");
+    throw new Error("Failed to extract Excel content", { cause: error });
   }
 }
 
