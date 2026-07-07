@@ -38,7 +38,8 @@ const webmasterVerification = {
 
 const googleAnalyticsId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
-const adsenseClient = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT;
+const adsenseClient =
+  process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT ?? "ca-pub-4034494107767675";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
